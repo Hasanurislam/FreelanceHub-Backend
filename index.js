@@ -50,6 +50,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: "https://freelance-hub-frontend-ten.vercel.app",
+    credentials:true,
   },
 });
 

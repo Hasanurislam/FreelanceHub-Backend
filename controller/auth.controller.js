@@ -19,33 +19,40 @@ const register= async (req,res,next)=>{
 
 }
 
-const login= async(req,res,next)=>{
+const login = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ username: req.body.username });
 
-  try{
-    const user= await User.findOne({username: req.body.username})
-    
-    if(!user) return next(createError(404,"User not found"));
-    
-    const idCorrect=bcrypt.compareSync(req.body.password,user.password);
-    if(!idCorrect){
-       return res.status(400).send('wrong user or password');
+    if (!user) return next(createError(404, "User not found"));
+
+    const isCorrect = bcrypt.compareSync(req.body.password, user.password);
+    if (!isCorrect) {
+      return res.status(400).send("Wrong username or password");
     }
-    const token=jwt.sign({
-      id: user._id,
-      isSeller:user.isSeller,
-    },process.env.JWT_SECRET)
 
-    const {password,...info}=user._doc;
-    res.cookie("accessToken",token,{
-      httpOnly:true,
-    }).status(200).send(info)
+    const token = jwt.sign(
+      {
+        id: user._id,
+        isSeller: user.isSeller,
+      },
+      process.env.JWT_SECRET
+    );
 
+    const { password, ...info } = user._doc;
+
+ 
+    res
+      .cookie("accessToken", token, {
+        httpOnly: true,
+        sameSite: "None", 
+        secure: true,     
+      })
+      .status(200)
+      .send(info);
+  } catch (error) {
+    next(error); 
   }
-  catch(error){
-     res.send('sommenthing went wrong')
-  }
-
-}
+};
 const logout=(req,res)=>{
   res.clearCookie("accessToken"
     ,{
