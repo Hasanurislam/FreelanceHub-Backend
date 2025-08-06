@@ -24,10 +24,9 @@ app.use(cookieParser());
 
 app.use(cors({
   origin: [
-    "http://localhost:5173", // Local frontend for development
-    "https://freelance-hub-frontend-j6rutsqyx-hasanur-islams-projects.vercel.app", // Vercel production frontend
+    "https://freelance-hub-frontend-ten.vercel.app", // ✅ Your correct frontend domain
   ],
-  credentials: true
+  credentials: true // if you are using cookies or auth
 }));
 
 
@@ -51,9 +50,10 @@ app.get('/read', (req,res)=>{
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://freelance-hub-frontend-j6rutsqyx-hasanur-islams-projects.vercel.app",
+    origin: "https://freelance-hub-frontend-ten.vercel.app",
   },
 });
+app.options("*", cors());
 
 let onlineUsers = [];
 
