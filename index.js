@@ -24,11 +24,10 @@ app.use(cookieParser());
 
 app.use(cors({
   origin: [
-    "https://freelance-hub-frontend-ten.vercel.app", // ✅ Your correct frontend domain
+    "https://freelance-hub-frontend-ten.vercel.app", 
   ],
   credentials: true // if you are using cookies or auth
 }));
-app.options("*", cors());
 
 // --- Database Connection ---
 mongoose.connect(process.env.MONGO_URI)
