@@ -39,7 +39,9 @@ app.use("/api/reviews", reviewRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/conversations", conversationRoute);
 app.use("/api/messages", messageRoute);
-
+app.get('/read', (req,res)=>{
+  res.send("Hello ")
+})
 // --- Socket.IO Integration ---
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
