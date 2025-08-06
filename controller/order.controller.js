@@ -125,10 +125,23 @@ const getOrders = async (req, res, next) => {
     }
 };
 
+const getBuyingOrders = async (req, res, next) => {
+    try {
+        const orders = await Order.find({ buyerId: req.userId })
+            .populate("sellerId", "username img"); // Populate seller details
+
+        res.status(200).send(orders);
+    } catch (err) {
+        next(err);
+    }
+};
+
+
 module.exports = {
     intent,
     getOrders,
     confirm,
     updateStatus,
     checkPurchase,
+    getBuyingOrders,
 };
