@@ -1,7 +1,7 @@
 const Order=require("../Models/OrderModel.js")
 const Gig = require("../Models/gigModel.js");
 const Stripe =require('stripe');
-
+const User = require("../Models/userModel.js");
 
 const intent = async (req, res, next) => {
   const stripe = new Stripe(process.env.STRIPE);
@@ -48,18 +48,48 @@ const intent = async (req, res, next) => {
 
 
 const getOrders = async (req, res, next) => {
-  try {
-    const orders = await Order.find({
-      ...(req.isSeller ? { sellerId: req.userId } : { buyerId: req.userId }),
-      status: { $ne: "Pending" }, // Optionally hide initial pending orders until paid
-    }).populate(req.isSeller ? "buyerId" : "sellerId", "username img");
+    try {
+        // 1. Find all orders where the current user is either the buyer or the seller
+        const orders = await Order.find({
+            ...(req.isSeller ? { sellerId: req.userId } : { buyerId: req.userId }),
+        }).lean();
 
-    res.status(200).send(orders);
-  } catch (err) {
-    next(err);
-  }
+        if (!orders.length) {
+            return res.status(200).send([]);
+        }
+
+        // 2. Collect the IDs of the other users in the transactions
+        const otherUserIds = [...new Set(orders.map(order => 
+            req.isSeller ? order.buyerId : order.sellerId
+        ))];
+
+        // 3. Fetch the details for all those other users in a single query
+        const users = await User.find({ _id: { $in: otherUserIds } }).select('username img').lean();
+
+        const userMap = users.reduce((acc, user) => {
+            acc[user._id.toString()] = user;
+            return acc;
+        }, {});
+
+        // 4. Attach the correct user details to each order
+        const populatedOrders = orders.map(order => {
+            const otherUserId = req.isSeller ? order.buyerId : order.sellerId;
+            const otherUserDetails = userMap[otherUserId];
+            
+            if (req.isSeller) {
+                order.buyerId = otherUserDetails || { username: "N/A" };
+            } else {
+                order.sellerId = otherUserDetails || { username: "N/A" };
+            }
+            return order;
+        });
+
+        res.status(200).send(populatedOrders);
+
+    } catch (err) {
+        next(err);
+    }
 };
-
 
 
 const confirm = async (req, res, next) => {
