@@ -49,17 +49,10 @@ const intent = async (req, res, next) => {
 
 const getOrders = async (req, res, next) => {
   try {
-    const query = req.isSeller
-      ? { sellerId: req.userId }
-      : { buyerId: req.userId };
-
     const orders = await Order.find({
-      ...query,
-      status: { $ne: "Pending" },
-    }).populate(
-      req.isSeller ? "buyerId" : "sellerId",
-      "username img"
-    );
+      ...(req.isSeller ? { sellerId: req.userId } : { buyerId: req.userId }),
+      status: { $ne: "Pending" }, // Optionally hide initial pending orders until paid
+    }).populate(req.isSeller ? "buyerId" : "sellerId", "username img");
 
     res.status(200).send(orders);
   } catch (err) {
