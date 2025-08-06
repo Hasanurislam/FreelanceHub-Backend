@@ -36,18 +36,39 @@
 
 const becomeSeller = async (req, res, next) => {
     try {
-        await User.findByIdAndUpdate(req.userId, {
-            $set: {
-                isSeller: true,
-                phone: req.body.phone,
-                desc: req.body.desc,
+
+        const user = await User.findByIdAndUpdate(
+            req.userId, 
+            {
+                $set: {
+                    isSeller: true,
+                    desc: req.body.desc,
+                },
             },
-        });
-        res.status(200).send("You have successfully become a seller!");
+            { new: true }
+        );
+
+        
+        const token = jwt.sign(
+            {
+                id: user._id,
+                isSeller: user.isSeller,
+            },
+            process.env.JWT_SECRET
+        );
+
+        const { password, ...info } = user._doc;
+
+        // Send back the new token in a cookie and the updated user info
+        res.cookie("accessToken", token, {
+            httpOnly: true,
+        }).status(200).send(info);
+
     } catch (err) {
         next(err);
     }
 };
+
 const getSellerStats = async (req, res, next) => {
     if (!req.isSeller) {
         return next(createError(403, "You must be a seller to view this information."));
