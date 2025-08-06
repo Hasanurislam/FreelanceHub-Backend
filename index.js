@@ -28,7 +28,7 @@ app.use(cors({
   ],
   credentials: true // if you are using cookies or auth
 }));
-
+app.options("*", cors());
 
 // --- Database Connection ---
 mongoose.connect(process.env.MONGO_URI)
@@ -53,7 +53,7 @@ const io = new Server(httpServer, {
     origin: "https://freelance-hub-frontend-ten.vercel.app",
   },
 });
-app.options("*", cors());
+
 
 let onlineUsers = [];
 
