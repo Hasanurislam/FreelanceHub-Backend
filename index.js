@@ -21,10 +21,15 @@ const app = express();
 // --- Express App Setup ---
 app.use(express.json());
 app.use(cookieParser());
+
 app.use(cors({
-  origin: "http://localhost:5173", // Your frontend URL
+  origin: [
+    "http://localhost:5173", // Local frontend for development
+    "https://freelance-hub-frontend-j6rutsqyx-hasanur-islams-projects.vercel.app", // Vercel production frontend
+  ],
   credentials: true
 }));
+
 
 // --- Database Connection ---
 mongoose.connect(process.env.MONGO_URI)
@@ -46,7 +51,7 @@ app.get('/read', (req,res)=>{
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://freelance-hub-frontend-j6rutsqyx-hasanur-islams-projects.vercel.app/",
+    origin: "https://freelance-hub-frontend-j6rutsqyx-hasanur-islams-projects.vercel.app",
   },
 });
 
